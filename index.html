@@ -80,6 +80,12 @@ body{
 @keyframes spinFlip{0%{transform:rotateY(0) translateZ(0)}50%{transform:rotateY(180deg) rotateX(28deg) translateZ(40px)}100%{transform:rotateY(360deg) rotateX(0) translateZ(0)}}
 @keyframes spinTumble{0%{transform:rotate(0) rotateX(0)}50%{transform:rotate(-14deg) rotateX(180deg) translateZ(30px)}100%{transform:rotate(0) rotateX(360deg) translateZ(0)}}
 
+/* sem seleção/arrasto no cartão e nos tiros (o painel continua selecionável) */
+body{-webkit-user-select:none;user-select:none}
+.panel,.panel *{-webkit-user-select:text;user-select:text}
+input{-webkit-user-select:text;user-select:text}
+img{-webkit-user-drag:none;user-drag:none;pointer-events:none}
+
 /* glitch (nome) */
 .glitch{position:relative;display:inline-block;animation:gBase var(--gt,7s) steps(1,end) infinite}
 .glitch::before,.glitch::after{content:attr(data-text);position:absolute;inset:0;opacity:0;pointer-events:none;clip-path:inset(0 0 100% 0);text-shadow:none}
@@ -478,14 +484,14 @@ const cur = $("cur");
 /* ---------- ícones magnéticos: puxados pelo cursor quando ele chega perto ---------- */
 (function magnetic(){
   if (reduce || !fine) return;
-  const R = 90, els = () => document.querySelectorAll(".soc,.pbtn");
+  const R = 70, els = () => document.querySelectorAll(".soc,.pbtn");
   let mx = -9999, my = -9999, queued = false;
   function update(){
     queued = false;
     els().forEach(el => {
       const r = el.getBoundingClientRect(), cx = r.left + r.width/2, cy = r.top + r.height/2;
       const dx = mx - cx, dy = my - cy, d = Math.hypot(dx, dy);
-      if (d < R) { const f = (1 - d/R) * (el.classList.contains("pbtn") ? .18 : .45); el.style.transform = `translate(${(dx*f).toFixed(1)}px,${(dy*f).toFixed(1)}px) scale(${(1 + (1 - d/R)*.08).toFixed(3)})`; }
+      if (d < R) { const f = (1 - d/R) * (el.classList.contains("pbtn") ? .12 : .22); el.style.transform = `translate(${(dx*f).toFixed(1)}px,${(dy*f).toFixed(1)}px) scale(${(1 + (1 - d/R)*.04).toFixed(3)})`; }
       else if (el.style.transform) el.style.transform = "";
     });
   }
@@ -649,15 +655,27 @@ function drawViz(t){
 
 /* ---------- prévia abafada na tela de entrada (toca quando o navegador permite) ---------- */
 const previa = $("previa");
+let previewDead = false, previewPromise = null;
 function previewVol(){ return Math.min(.6, Math.pow(volVal/100, 2) * 1.6); }
-function previewTry(){ if (document.body.classList.contains("entered") || !M.src) return; previa.volume = previewVol(); previa.play().catch(()=>{}); }
-function previewStop(){
-  if (previa.paused) return;
-  const v0 = previa.volume, t0 = performance.now();
-  (function step(){ const k = (performance.now() - t0) / 700; if (k >= 1) { previa.pause(); return; } previa.volume = v0 * (1 - k); requestAnimationFrame(step); })();
+function previewTry(){
+  if (previewDead || document.body.classList.contains("entered") || !M.src) return;
+  previa.volume = previewVol();
+  try { previewPromise = previa.play().catch(()=>{}); } catch(e){}
 }
+function previewStop(){
+  previewDead = true;
+  const kill = () => { try { previa.pause(); previa.currentTime = 0; previa.volume = 0; } catch(e){} };
+  const fade = () => {
+    if (previa.paused) { kill(); return; }
+    const v0 = previa.volume, t0 = performance.now();
+    (function step(){ const k = (performance.now() - t0) / 600; if (k >= 1 || previewDead === "killed") { kill(); return; } previa.volume = v0 * (1 - k); requestAnimationFrame(step); })();
+  };
+  if (previewPromise && previewPromise.then) previewPromise.then(fade, fade); else fade();
+  setTimeout(kill, 1200); setTimeout(kill, 3000);   /* garantia: nunca fica tocando junto */
+}
+previa.addEventListener("play", () => { if (previewDead) previewStop(); });
 previewTry();
-addEventListener("keydown", previewTry); addEventListener("pointerdown", previewTry, true); addEventListener("touchstart", previewTry, { passive: true });
+addEventListener("keydown", previewTry);
 
 /* ---------- clique para entrar ---------- */
 const enter = $("enter");
@@ -872,6 +890,7 @@ function stopAuto(){ clearInterval(auto); auto = null; }
 addEventListener("pointerdown", e => {
   if (e.pointerType !== "mouse" || e.button !== 0 || !document.body.classList.contains("entered")) return;
   if (e.target && e.target.closest && e.target.closest("a,button,[role=slider],input,.volbox,.player,.panel")) return;
+  e.preventDefault();
   burst = 0; fireAt(e.clientX, e.clientY, false); stopAuto();
   auto = setInterval(() => { burst++; const climb = Math.min(burst * 2.2, 42), spread = Math.min(burst, 6) * 2.2; fireAt(gx + (Math.random()-.5)*spread*2, gy - climb + (Math.random()-.5)*spread, burst % 3 !== 0); }, 95);
 });
