@@ -12,5 +12,7 @@ Ligado à Cloudflare (Worker `ariesdasilva`). Todo push na branch `main` publica
 Comando de deploy na Cloudflare: `npx wrangler deploy`.
 
 ## Painel secreto
-`Ctrl+Alt+D` no site abre o painel de visitas (pede senha). O registro fica em `worker.js` (Durable Object com SQLite na Cloudflare).
+`Ctrl+Alt+D` (ou 3 toques rápidos em "copiar link") abre o painel de visitas (pede senha). O registro fica em `worker.js` (Durable Object com SQLite na Cloudflare).
+
+Pra conferir se o servidor de estatísticas está de pé: abra `/api/ping` no site (tem que responder `{"ok":true}`), ou rode o teste "checar site" na aba Actions do GitHub — o resultado aparece no log e como check do último commit.
 A senha não está no repositório: em `wrangler.jsonc` fica só o SHA-256 dela (`PANEL_HASH`).
