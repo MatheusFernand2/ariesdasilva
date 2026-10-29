@@ -8,6 +8,6 @@
   "migrations": [{ "tag": "v1", "new_sqlite_classes": ["Stats"] }],
   "vars": {
     // SHA-256 da senha do painel secreto (Ctrl+Alt+D). A senha em si não fica no repositório.
-    "PANEL_HASH": "6838bf73e68c60920e9cf41e19113c68cf8f641dd320a830444a684a4e7be196"
+    "PANEL_HASH": "ac84c86cb854ff2bec33ceee55f0446bbf104c6fbf3d235c718787c34129f00a"
   }
 }
