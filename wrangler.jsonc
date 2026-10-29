@@ -1,0 +1,8 @@
+// Configuração da Cloudflare: publica este repositório como site estático no Worker "ariesdasilva".
+{
+  "name": "ariesdasilva",
+  "compatibility_date": "2026-09-01",
+  "assets": {
+    "directory": "."
+  }
+}
