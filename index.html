@@ -566,10 +566,11 @@ function showPresence(d){
   if (!d || !d.discord_status) return;
   const st = d.discord_status;
   [presence, avdot].forEach(el => { el.classList.remove("st-online","st-idle","st-dnd","st-offline"); el.classList.add("st-" + st); });
-  const acts = d.activities || [];
+  const off = st === "offline";
+  const acts = off ? [] : (d.activities || []);
   const custom = acts.find(a => a.type === 4), game = acts.find(a => a.type === 0), stream = acts.find(a => a.type === 1), listen = acts.find(a => a.type === 2 && a.name !== "Spotify"), watch = acts.find(a => a.type === 3), comp = acts.find(a => a.type === 5);
   let extra = "", img = "";
-  if (d.listening_to_spotify && d.spotify) { extra = "ouvindo <b>" + esc(d.spotify.song) + "</b> · " + esc(d.spotify.artist); img = d.spotify.album_art_url || ""; }
+  if (!off && d.listening_to_spotify && d.spotify) { extra = "ouvindo <b>" + esc(d.spotify.song) + "</b> · " + esc(d.spotify.artist); img = d.spotify.album_art_url || ""; }
   else if (game) { extra = "jogando <b>" + esc(game.name) + "</b>" + (game.details ? " · " + esc(game.details) : "") + (game.state ? " · " + esc(game.state) : ""); img = actImg(game); }
   else if (stream) { extra = "transmitindo <b>" + esc(stream.name) + "</b>" + (stream.details ? " · " + esc(stream.details) : ""); img = actImg(stream); }
   else if (listen) { extra = "ouvindo <b>" + esc(listen.details || listen.name) + "</b>" + (listen.state ? " · " + esc(listen.state) : "") + (listen.details ? " · " + esc(listen.name) : ""); img = actImg(listen); }
