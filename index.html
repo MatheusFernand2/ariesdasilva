@@ -12,7 +12,7 @@
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=New+Rocker&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
 <style>
 /* Layout: tela de entrada com o nome em glitch; depois, um cartão de vidro bem transparente, inclinando em 3D com camadas em paralaxe, sobre fundo preto com glow. */
 :root{
@@ -23,7 +23,7 @@
   --fg:#ececee;
   --mute:#85828a;
   --glow:rgba(255,255,255,.55);
-  --f-display:"Anton","Impact","Arial Narrow Bold",sans-serif;
+  --f-display:"New Rocker","Old English Text MT",Georgia,serif;
   --f-mono:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace;
   --beat:0;
   color-scheme:dark;
@@ -73,7 +73,7 @@ body{
   background:rgba(0,0,0,.6);backdrop-filter:blur(18px) saturate(.6);-webkit-backdrop-filter:blur(18px) saturate(.6);
   display:grid;place-items:center;align-content:center;gap:10px;font-family:var(--f-mono);
   transition:opacity .7s ease,backdrop-filter .7s ease,-webkit-backdrop-filter .7s ease}
-.enter-name{font-family:var(--f-display);font-size:clamp(72px,18vw,150px);line-height:1;letter-spacing:.02em;color:#f4f4f6;--gt:2.6s;
+.enter-name{font-family:var(--f-display);font-size:clamp(76px,19vw,160px);line-height:1;letter-spacing:.01em;color:#f4f4f6;--gt:2.6s;
   text-shadow:0 0 1px #fff,0 0 30px rgba(255,255,255,.35),0 0 90px rgba(255,255,255,.12);margin-bottom:10px}
 .enter-txt{font-size:clamp(13px,2vw,16px);letter-spacing:.34em;text-transform:lowercase;text-shadow:0 0 18px var(--glow),0 0 2px #fff;animation:flick 3.2s ease-in-out infinite}
 .enter-txt::after{content:"_";margin-left:2px;animation:blink 1s steps(1) infinite}
@@ -138,7 +138,7 @@ body.entered .lay{animation:rise .8s cubic-bezier(.2,.8,.2,1) backwards;animatio
 @keyframes spin{to{--a:360deg}}
 
 .eyebrow{font-size:11px;letter-spacing:.42em;color:var(--mute);margin-bottom:4px;padding-left:.42em}
-.name{margin:0;font-family:var(--f-display);font-weight:400;font-size:clamp(58px,14vw,78px);line-height:1;letter-spacing:.02em;color:#f4f4f6;
+.name{margin:0;font-family:var(--f-display);font-weight:400;font-size:clamp(62px,15vw,84px);line-height:1;letter-spacing:.01em;color:#f4f4f6;
   text-shadow:0 0 1px #fff,0 0 24px rgba(255,255,255,.32),0 0 70px rgba(255,255,255,.12)}
 .handle{margin-top:-2px;font-size:12.5px;letter-spacing:.04em;color:var(--mute);overflow-wrap:anywhere}
 
