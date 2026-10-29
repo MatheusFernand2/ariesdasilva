@@ -55,8 +55,8 @@ export class Stats {
     try {
       this.init();
       if (url.pathname === "/api/ping") return json({ ok: true, t: Date.now() }, 200, cors);
-      if (url.pathname === "/api/hit" && request.method === "POST") return this.hit(request, cors);
-      if (url.pathname === "/api/stats" && request.method === "GET") return this.stats(request, url, cors);
+      if (url.pathname === "/api/hit" && request.method === "POST") return await this.hit(request, cors);
+      if (url.pathname === "/api/stats" && request.method === "GET") return await this.stats(request, url, cors);
       return json({ ok: false, error: "nada aqui" }, 404, cors);
     } catch (e) {
       return json({ ok: false, error: "stats: " + String(e && e.message || e) }, 500, cors);
@@ -120,10 +120,11 @@ export class Stats {
     const byBrowser = this.sql.exec(`SELECT browser, COUNT(*) AS n FROM visits GROUP BY browser ORDER BY n DESC LIMIT 10`).toArray();
     const byRef = this.sql.exec(`SELECT ref, COUNT(*) AS n FROM visits WHERE ref != '' GROUP BY ref ORDER BY n DESC LIMIT 15`).toArray();
     const visits = this.sql.exec(`SELECT * FROM visits ORDER BY ts DESC LIMIT ?`, limit).toArray();
-    const ids = visits.map(v => v.id);
-    const clicks = ids.length ? this.sql.exec(`SELECT visit_id, name, link, ts FROM clicks WHERE visit_id IN (${ids.map(() => "?").join(",")}) ORDER BY ts ASC`, ...ids).toArray() : [];
+    // o SQLite da Cloudflare aceita no máximo 100 parâmetros por consulta: nada de lista de IDs, usa subconsulta
+    const clicks = this.sql.exec(`SELECT visit_id, name, link, ts FROM clicks WHERE visit_id IN (SELECT id FROM visits ORDER BY ts DESC LIMIT ?) ORDER BY ts ASC`, limit).toArray();
+    const byVisit = {}; clicks.forEach(c => { (byVisit[c.visit_id] = byVisit[c.visit_id] || []).push({ name: c.name, link: c.link, ts: c.ts }); });
     const seen = {}; this.sql.exec(`SELECT vid, COUNT(*) AS n FROM visits GROUP BY vid`).toArray().forEach(r => { seen[r.vid] = r.n; });
-    visits.forEach(v => { v.clicks = clicks.filter(c => c.visit_id === v.id).map(c => ({ name: c.name, link: c.link, ts: c.ts })); v.times = seen[v.vid] || 1; });
+    visits.forEach(v => { v.clicks = byVisit[v.id] || []; v.times = seen[v.vid] || 1; });
     return json({ ok: true, totals, byLink, byCountry, byCity, byDevice, byBrowser, byRef, visits }, 200, cors);
   }
 }
