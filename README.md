@@ -3,7 +3,7 @@
 Minha página pessoal de links, no estilo guns.lol.
 
 - `index.html`: a página inteira (foto, fundo, capa e ícones já vão embutidos).
-- `musica.mp3`: a música do player (já cortada pra começar no 1:38). `assets/previa.mp3`: prévia abafada da tela de entrada. `assets/furo-*.png`: furos de bala do tiro. `icon.png` / `apple-icon.png`: ícone da aba e da tela inicial.
+- `musica.mp3`: a música (já cortada pra começar no 1:38, 128 kbps). `assets/`: imagens em WebP (avatar, fundo em 2 tamanhos, desenho da esquerda, troll), prévia abafada, furos de bala e sons do tiro. `icon.png` / `apple-icon.png`: ícone da aba e da tela inicial.
 - Pra mudar nome, links, música ou o segundo em que ela começa, edite o bloco `CONFIG` no começo do `<script>`.
 - Status do Discord ao vivo usa o Lanyard: precisa estar no servidor discord.gg/lanyard.
 
