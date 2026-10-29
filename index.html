@@ -925,12 +925,21 @@ const TRACK = (function(){
   $("panelClose").addEventListener("click", close);
   login.addEventListener("submit", e => { e.preventDefault(); key = keyInput.value; load(); });
   function load(){
-    fetch("/api/stats?limit=200", { headers: { "x-panel-key": key } }).then(r => r.json()).then(d => {
-      if (!d || !d.ok) { key = ""; try { sessionStorage.removeItem("aries:panel"); } catch(e){} login.hidden = false; body.hidden = true; err.textContent = (d && d.error) || "não deu"; err.hidden = false; keyInput.value = ""; keyInput.focus(); return; }
+    fetch("/api/stats?limit=200", { headers: { "x-panel-key": key }, cache: "no-store" }).then(async r => {
+      const txt = await r.text(); let d = null;
+      try { d = JSON.parse(txt); } catch(e){}
+      if (!d) throw new Error("HTTP " + r.status + " · " + (txt.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim().slice(0, 80) || "resposta vazia"));
+      return d;
+    }).then(d => {
+      if (!d.ok) { key = ""; try { sessionStorage.removeItem("aries:panel"); } catch(e){} login.hidden = false; body.hidden = true; err.textContent = d.error || "não deu"; err.hidden = false; keyInput.value = ""; keyInput.focus(); return; }
       try { sessionStorage.setItem("aries:panel", key); } catch(e){}
       login.hidden = true; body.hidden = false; render(d);
       clearInterval(timer); timer = setInterval(load, 20000);
-    }).catch(() => { err.textContent = "sem conexão com o servidor de estatísticas (só funciona no site publicado)"; err.hidden = false; login.hidden = false; });
+    }).catch(e => {
+      const local = location.protocol === "file:" || /^(localhost|127\.0\.0\.1)/.test(location.hostname);
+      err.textContent = local ? "o painel só funciona no site publicado" : "o servidor de estatísticas não respondeu direito (" + ((e && e.message) || "sem conexão") + ")";
+      err.hidden = false; login.hidden = false;
+    });
   }
   function render(d){
     const t = d.totals;

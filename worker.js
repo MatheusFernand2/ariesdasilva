@@ -2,24 +2,42 @@
    Rotas:
      POST /api/hit    { type: "visit" | "click" | "leave", ... }   (chamado pela página)
      GET  /api/stats  (precisa do cabeçalho x-panel-key com a senha do painel)
+     GET  /api/ping   responde { ok: true } se o servidor de estatísticas estiver de pé
    Tudo que não é /api/* é servido como arquivo estático (index.html, musica.mp3, ícones). */
 
 const MAX_VISITS = 6000;
+const JSON_HEADERS = { "Content-Type": "application/json", "Cache-Control": "no-store" };
 
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
-    if (url.pathname.startsWith("/api/")) {
+    if (!url.pathname.startsWith("/api/")) return env.ASSETS.fetch(request);
+    try {
+      if (!env.STATS) throw new Error("STATS (Durable Object) não está configurado no wrangler.jsonc");
+      // request.cf (país, cidade, provedor...) só existe na primeira camada: manda pro Durable Object num cabeçalho
+      const cf = request.cf || {};
+      const geo = {
+        country: cf.country, region: cf.region, city: cf.city, postalCode: cf.postalCode, latitude: cf.latitude, longitude: cf.longitude,
+        asn: cf.asn, asOrganization: cf.asOrganization, colo: cf.colo, timezone: cf.timezone
+      };
+      const headers = new Headers(request.headers);
+      headers.set("x-geo", encodeURIComponent(JSON.stringify(geo)));
+      const fwd = new Request(request, { headers });
       const id = env.STATS.idFromName("main");
-      return env.STATS.get(id).fetch(request);
+      return await env.STATS.get(id).fetch(fwd);
+    } catch (e) {
+      return new Response(JSON.stringify({ ok: false, error: "worker: " + String(e && e.message || e) }), { status: 500, headers: JSON_HEADERS });
     }
-    return env.ASSETS.fetch(request);
   }
 };
 
 export class Stats {
   constructor(ctx, env) {
-    this.ctx = ctx; this.env = env; this.sql = ctx.storage.sql;
+    this.ctx = ctx; this.env = env; this.sql = ctx.storage.sql; this.ready = false;
+  }
+
+  init() {
+    if (this.ready) return;
     this.sql.exec(`CREATE TABLE IF NOT EXISTS visits (
       id INTEGER PRIMARY KEY AUTOINCREMENT, ts INTEGER, vid TEXT, ip TEXT, country TEXT, region TEXT, city TEXT, postal TEXT,
       lat REAL, lon TEXT, asn TEXT, isp TEXT, colo TEXT, ua TEXT, browser TEXT, os TEXT, device TEXT, lang TEXT, langs TEXT, tz TEXT,
@@ -28,17 +46,20 @@ export class Stats {
     this.sql.exec(`CREATE TABLE IF NOT EXISTS clicks (id INTEGER PRIMARY KEY AUTOINCREMENT, ts INTEGER, vid TEXT, visit_id INTEGER, link TEXT, name TEXT)`);
     this.sql.exec(`CREATE INDEX IF NOT EXISTS visits_ts ON visits(ts)`);
     this.sql.exec(`CREATE INDEX IF NOT EXISTS clicks_ts ON clicks(ts)`);
+    this.ready = true;
   }
 
   async fetch(request) {
     const url = new URL(request.url);
     const cors = { "Access-Control-Allow-Origin": url.origin, "Cache-Control": "no-store" };
     try {
+      this.init();
+      if (url.pathname === "/api/ping") return json({ ok: true, t: Date.now() }, 200, cors);
       if (url.pathname === "/api/hit" && request.method === "POST") return this.hit(request, cors);
       if (url.pathname === "/api/stats" && request.method === "GET") return this.stats(request, url, cors);
-      return new Response("nada aqui", { status: 404, headers: cors });
+      return json({ ok: false, error: "nada aqui" }, 404, cors);
     } catch (e) {
-      return new Response(JSON.stringify({ ok: false, error: String(e && e.message || e) }), { status: 500, headers: { ...cors, "Content-Type": "application/json" } });
+      return json({ ok: false, error: "stats: " + String(e && e.message || e) }, 500, cors);
     }
   }
 
@@ -47,7 +68,7 @@ export class Stats {
     if (!body || typeof body !== "object") return json({ ok: false }, 400, cors);
     const ua = request.headers.get("user-agent") || "";
     if (/bot|crawler|spider|headless|preview|facebookexternalhit|whatsapp|telegram|discordbot/i.test(ua)) return json({ ok: true, bot: true }, 200, cors);
-    const cf = request.cf || {};
+    const cf = geoFrom(request);
     const vid = str(body.vid, 48);
     const now = Date.now();
 
@@ -56,8 +77,8 @@ export class Stats {
       const row = this.sql.exec(
         `INSERT INTO visits (ts, vid, ip, country, region, city, postal, lat, lon, asn, isp, colo, ua, browser, os, device, lang, langs, tz, ref, screen, viewport, dpr, platform, cores, mem, conn, touch, gpu, url)
          VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?) RETURNING id`,
-        now, vid, request.headers.get("cf-connecting-ip") || "", cf.country || "", cf.region || "", cf.city || "", cf.postalCode || "",
-        num(cf.latitude), str(cf.longitude, 24), cf.asn ? String(cf.asn) : "", cf.asOrganization || "", cf.colo || "", str(ua, 400),
+        now, vid, request.headers.get("cf-connecting-ip") || "", str(cf.country, 8), str(cf.region, 60), str(cf.city, 60), str(cf.postalCode, 16),
+        num(cf.latitude), str(cf.longitude, 24), cf.asn ? String(cf.asn) : "", str(cf.asOrganization, 80), str(cf.colo, 8), str(ua, 400),
         info.browser, info.os, info.device, str(body.lang, 16), str(body.langs, 80), str(body.tz || cf.timezone, 48), str(body.ref, 300),
         str(body.screen, 20), str(body.viewport, 20), num(body.dpr), str(body.platform, 40), int(body.cores), num(body.mem), str(body.conn, 16),
         body.touch ? 1 : 0, str(body.gpu, 120), str(body.url, 200)
@@ -83,7 +104,6 @@ export class Stats {
     const hash = await sha256(key);
     if (!this.env.PANEL_HASH || hash !== this.env.PANEL_HASH) return json({ ok: false, error: "senha errada" }, 401, cors);
     const limit = Math.min(500, Math.max(1, int(url.searchParams.get("limit")) || 200));
-    const dayStart = new Date(); dayStart.setUTCHours(dayStart.getUTCHours() - 24);
     const since24 = Date.now() - 86400000, since7 = Date.now() - 7 * 86400000;
     const totals = {
       visits: this.sql.exec(`SELECT COUNT(*) AS n FROM visits`).one().n,
@@ -108,7 +128,11 @@ export class Stats {
   }
 }
 
-function json(o, status, extra) { return new Response(JSON.stringify(o), { status, headers: { "Content-Type": "application/json", ...extra } }); }
+function geoFrom(request) {
+  try { const h = request.headers.get("x-geo"); if (h) return JSON.parse(decodeURIComponent(h)) || {}; } catch (e) {}
+  return request.cf || {};
+}
+function json(o, status, extra) { return new Response(JSON.stringify(o), { status, headers: { ...JSON_HEADERS, ...extra } }); }
 function str(v, max) { return v == null ? "" : String(v).slice(0, max); }
 function num(v) { const n = parseFloat(v); return isFinite(n) ? n : null; }
 function int(v) { const n = parseInt(v, 10); return isFinite(n) ? n : null; }
