@@ -158,8 +158,8 @@ body{
 @media (hover:none){.volbox{width:200px}.volpanel{opacity:1}}
 
 /* cursor: mira */
-.hascur,.hascur a,.hascur button,.hascur [role=slider]{cursor:none}
-.cur{position:fixed;left:0;top:0;z-index:60;pointer-events:none;mix-blend-mode:difference;transition:opacity .25s}
+.hascur,.hascur *{cursor:none!important}
+.cur{position:fixed;left:0;top:0;z-index:95;pointer-events:none;mix-blend-mode:difference;transition:opacity .25s}
 .cur-x{position:fixed;left:0;top:0;width:26px;height:26px;margin:-13px 0 0 -13px;will-change:transform}
 .xh{position:absolute;inset:0;transform-origin:center}
 .xh i{position:absolute;background:#fff;box-shadow:0 0 4px rgba(255,255,255,.7);transition:transform .16s cubic-bezier(.2,.8,.2,1)}
