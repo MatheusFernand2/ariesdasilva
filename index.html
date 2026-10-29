@@ -223,7 +223,11 @@ body.entered .lay{animation:rise .8s cubic-bezier(.2,.8,.2,1) backwards;animatio
 
 .presence{display:flex;align-items:center;gap:8px;max-width:100%;min-width:0;padding:6px 12px;border-radius:999px;border:1px solid var(--line);background:rgba(0,0,0,.3);font-size:11.5px;color:var(--mute)}
 .pdot{width:8px;height:8px;border-radius:50%;flex:none;background:#6b6b70;color:#6b6b70;box-shadow:0 0 8px currentColor}
-.ptext{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ptext{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;--shift:0px;--dur:6s}
+.pscroll{display:inline-block;white-space:nowrap}
+.presence.scroll .ptext{text-overflow:clip}
+.presence.scroll .pscroll{animation:pmarq var(--dur) ease-in-out infinite}
+@keyframes pmarq{0%,12%{transform:translateX(0)}62%,74%{transform:translateX(var(--shift))}100%{transform:translateX(0)}}
 .ptext b{color:var(--fg);font-weight:500}
 .pimg{width:16px;height:16px;border-radius:4px;object-fit:cover;vertical-align:-3px;margin-right:6px;pointer-events:none}
 .st-online .pdot,.dot.st-online{background:#3ba55c;color:#3ba55c}
@@ -566,13 +570,24 @@ function showPresence(d){
   if (d.listening_to_spotify && d.spotify) { extra = "ouvindo <b>" + esc(d.spotify.song) + "</b> · " + esc(d.spotify.artist); img = d.spotify.album_art_url || ""; }
   else if (game) { extra = "jogando <b>" + esc(game.name) + "</b>" + (game.details ? " · " + esc(game.details) : "") + (game.state ? " · " + esc(game.state) : ""); img = actImg(game); }
   else if (stream) { extra = "transmitindo <b>" + esc(stream.name) + "</b>" + (stream.details ? " · " + esc(stream.details) : ""); img = actImg(stream); }
-  else if (listen) { extra = "ouvindo <b>" + esc(listen.name) + "</b>" + (listen.details ? " · " + esc(listen.details) : ""); img = actImg(listen); }
+  else if (listen) { extra = "ouvindo <b>" + esc(listen.details || listen.name) + "</b>" + (listen.state ? " · " + esc(listen.state) : "") + (listen.details ? " · " + esc(listen.name) : ""); img = actImg(listen); }
   else if (watch) { extra = "assistindo <b>" + esc(watch.name) + "</b>" + (watch.details ? " · " + esc(watch.details) : ""); img = actImg(watch); }
   else if (comp) { extra = "competindo em <b>" + esc(comp.name) + "</b>"; img = actImg(comp); }
   else if (custom && (custom.state || (custom.emoji && custom.emoji.name))) extra = "<b>" + (custom.emoji && custom.emoji.name && !custom.emoji.id ? esc(custom.emoji.name) + " " : "") + esc(custom.state || "") + "</b>";
-  ptext.innerHTML = (img ? '<img class="pimg" src="' + esc(img) + '" alt="" onerror="this.remove()">' : "") + (ST[st] || esc(st)) + (extra ? " · " + extra : "");
+  ptext.innerHTML = '<span class="pscroll">' + (img ? '<img class="pimg" src="' + esc(img) + '" alt="" onerror="this.remove()">' : "") + (ST[st] || esc(st)) + (extra ? " · " + extra : "") + '</span>';
   presence.hidden = false;
+  presence.classList.remove("scroll"); if (presence.matches(":hover")) presenceScroll();
 }
+function presenceScroll(){
+  const inner = ptext.querySelector(".pscroll"); if (!inner) return;
+  const over = inner.scrollWidth - ptext.clientWidth;
+  if (over <= 2) { presence.classList.remove("scroll"); return; }
+  ptext.style.setProperty("--shift", (-over - 4) + "px"); ptext.style.setProperty("--dur", Math.max(5, over / 28 + 3).toFixed(1) + "s");
+  presence.classList.add("scroll");
+}
+presence.addEventListener("pointerenter", presenceScroll);
+presence.addEventListener("pointerleave", () => presence.classList.remove("scroll"));
+presence.addEventListener("pointerdown", e => { if (e.pointerType === "touch") { if (presence.classList.contains("scroll")) presence.classList.remove("scroll"); else presenceScroll(); } });
 (function livePresence(){
   const id = CONFIG.discordId; if (!id) return;
   function poll(){ fetch("https://api.lanyard.rest/v1/users/" + id + "?t=" + Date.now(), { cache: "no-store" }).then(r => r.json()).then(j => { if (j && j.success) showPresence(j.data); }).catch(()=>{}); }
