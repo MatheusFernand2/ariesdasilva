@@ -50,6 +50,20 @@ body{
   background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
 .vignette{position:fixed;inset:0;z-index:2;pointer-events:none;background:radial-gradient(75% 60% at 50% 45%,transparent 20%,#000 75%)}
 
+/* desenho da esquerda: invisível, revelado por uma "lanterna" que segue o mouse */
+.art-left{position:fixed;left:2.5vw;top:50%;height:min(84vh,1040px);aspect-ratio:675/1200;max-width:28vw;transform:translateY(-50%);z-index:2;opacity:0;
+  background:url("arte-esquerda.jpg") center/contain no-repeat;mix-blend-mode:screen;--lx:50%;--ly:50%;
+  -webkit-mask-image:radial-gradient(300px circle at var(--lx) var(--ly),#000 0%,rgba(0,0,0,.75) 35%,rgba(0,0,0,.12) 70%,transparent 100%);
+  mask-image:radial-gradient(300px circle at var(--lx) var(--ly),#000 0%,rgba(0,0,0,.75) 35%,rgba(0,0,0,.12) 70%,transparent 100%);
+  transition:opacity .8s ease,transform .8s cubic-bezier(.2,.8,.2,1)}
+.art-left:hover{opacity:1;transform:translateY(-50%) scale(1.02)}
+@media (max-width:1000px),(hover:none){.art-left{display:none}}
+
+/* nome: salta pra frente no hover */
+.namewrap{display:inline-block;transition:transform .35s cubic-bezier(.2,.8,.2,1),filter .35s}
+.namewrap:hover{transform:translateY(-5px) scale(1.09);filter:drop-shadow(0 0 22px rgba(255,255,255,.45)) drop-shadow(0 0 60px rgba(255,255,255,.18))}
+.namewrap:hover .name{color:#fff}
+
 /* glitch (nome) */
 .glitch{position:relative;display:inline-block;animation:gBase var(--gt,7s) steps(1,end) infinite}
 .glitch::before,.glitch::after{content:attr(data-text);position:absolute;inset:0;opacity:0;pointer-events:none;clip-path:inset(0 0 100% 0);text-shadow:none}
@@ -299,6 +313,7 @@ body.entered .lay{animation:rise .8s cubic-bezier(.2,.8,.2,1) backwards;animatio
 <div class="scan" aria-hidden="true"></div>
 <div class="grain" aria-hidden="true"></div>
 <div class="vignette" aria-hidden="true"></div>
+<div class="art-left" id="artLeft" aria-hidden="true"></div>
 
 <button class="enter" id="enter" type="button" aria-label="Entrar no site">
   <span class="enter-name glitch" id="enterName" data-text=""></span>
@@ -323,7 +338,7 @@ body.entered .lay{animation:rise .8s cubic-bezier(.2,.8,.2,1) backwards;animatio
     <div class="sheen" aria-hidden="true"></div>
     <div class="rim" aria-hidden="true"></div>
     <div class="lay" style="--z:70;--d:0"><div class="avatar"><div class="ring"></div><div class="face" id="avatar"></div><div class="dot" id="avdot" title="status do Discord"></div></div></div>
-    <div class="lay" style="--z:52;--d:1"><div class="eyebrow" id="eyebrow"></div><h1 class="name glitch" id="name" data-text=""></h1><div class="handle" id="handle"></div></div>
+    <div class="lay" style="--z:52;--d:1"><div class="eyebrow" id="eyebrow"></div><span class="namewrap"><h1 class="name glitch" id="name" data-text=""></h1></span><div class="handle" id="handle"></div></div>
     <div class="lay" style="--z:40;--d:2"><div class="presence" id="presence" hidden><span class="pdot" id="pdot"></span><span class="ptext" id="ptext"></span></div></div>
     <div class="lay" style="--z:44;--d:3"><nav class="socials" id="socials" aria-label="Redes sociais"></nav></div>
     <div class="lay" style="--z:30;--d:4">
@@ -432,6 +447,12 @@ const cur = $("cur");
   document.addEventListener("mouseenter", () => cur.classList.remove("off"));
 })();
 
+/* ---------- desenho da esquerda: lanterna ---------- */
+(function artLight(){
+  const el = $("artLeft"); if (!el || !fine) return;
+  el.addEventListener("pointermove", e => { const r = el.getBoundingClientRect(); el.style.setProperty("--lx", ((e.clientX - r.left) / r.width * 100).toFixed(1) + "%"); el.style.setProperty("--ly", ((e.clientY - r.top) / r.height * 100).toFixed(1) + "%"); });
+})();
+
 /* ---------- ícones magnéticos: puxados pelo cursor quando ele chega perto ---------- */
 (function magnetic(){
   if (reduce || !fine) return;
@@ -442,7 +463,7 @@ const cur = $("cur");
     els().forEach(el => {
       const r = el.getBoundingClientRect(), cx = r.left + r.width/2, cy = r.top + r.height/2;
       const dx = mx - cx, dy = my - cy, d = Math.hypot(dx, dy);
-      if (d < R) { const f = (1 - d/R) * .45; el.style.transform = `translate(${(dx*f).toFixed(1)}px,${(dy*f).toFixed(1)}px) scale(${(1 + (1 - d/R)*.08).toFixed(3)})`; }
+      if (d < R) { const f = (1 - d/R) * (el.classList.contains("pbtn") ? .18 : .45); el.style.transform = `translate(${(dx*f).toFixed(1)}px,${(dy*f).toFixed(1)}px) scale(${(1 + (1 - d/R)*.08).toFixed(3)})`; }
       else if (el.style.transform) el.style.transform = "";
     });
   }
@@ -537,7 +558,7 @@ function seek(e){
   const r = $("bar").getBoundingClientRect();
   if (audio.duration) audio.currentTime = Math.min(1, Math.max(0, (e.clientX - r.left) / r.width)) * audio.duration;
 }
-$("bar").addEventListener("pointerdown", e => { seek(e); const mv = ev => seek(ev); addEventListener("pointermove", mv); addEventListener("pointerup", () => removeEventListener("pointermove", mv), { once: true }); });
+$("bar").addEventListener("pointerdown", e => { holding = true; seek(e); const mv = ev => seek(ev); addEventListener("pointermove", mv); addEventListener("pointerup", () => removeEventListener("pointermove", mv), { once: true }); });
 $("bar").addEventListener("keydown", e => {
   if (!audio.duration) return;
   userSeeked = true;
@@ -565,7 +586,7 @@ function setVol(v, save){
 setVol(volVal, false);
 vol.addEventListener("click", () => { audio.muted = !audio.muted; if (!audio.muted && volVal === 0) setVol(50, true); paintVol(); });
 function volFromEvent(e){ const r = volbar.getBoundingClientRect(); setVol((e.clientX - r.left) / r.width * 100, true); }
-volbar.addEventListener("pointerdown", e => { e.preventDefault(); volFromEvent(e); const mv = ev => volFromEvent(ev); addEventListener("pointermove", mv); addEventListener("pointerup", () => removeEventListener("pointermove", mv), { once: true }); });
+volbar.addEventListener("pointerdown", e => { holding = true; e.preventDefault(); volFromEvent(e); const mv = ev => volFromEvent(ev); addEventListener("pointermove", mv); addEventListener("pointerup", () => removeEventListener("pointermove", mv), { once: true }); });
 volbar.addEventListener("keydown", e => { if (e.key === "ArrowRight" || e.key === "ArrowUp") { e.preventDefault(); setVol(volVal + 5, true); } if (e.key === "ArrowLeft" || e.key === "ArrowDown") { e.preventDefault(); setVol(volVal - 5, true); } });
 volbox.addEventListener("wheel", e => { e.preventDefault(); setVol(volVal + (e.deltaY < 0 ? 5 : -5), true); }, { passive: false });
 
@@ -641,7 +662,10 @@ $("share").addEventListener("click", () => copy(location.href.split("#")[0], "li
 /* ---------- inclinação 3D + paralaxe das camadas ---------- */
 const card = $("card");
 const MAX = 12, RAD = Math.PI/180;
-let tx = 0, ty = 0, cx = 0, cy = 0, tilting = false;
+let tx = 0, ty = 0, cx = 0, cy = 0, tilting = false, calm = 0, calmTo = 0, holding = false;
+card.addEventListener("pointerenter", () => { calmTo = 1; });
+card.addEventListener("pointerleave", () => { calmTo = 0; });
+addEventListener("pointerup", () => { holding = false; });
 if (!reduce && fine) {
   addEventListener("pointermove", e => {
     const r = card.getBoundingClientRect();
@@ -661,7 +685,8 @@ function onTiltDevice(e){
 }
 function applyTilt(){
   if (!tilting || reduce) return;
-  cx += (tx - cx) * .1; cy += (ty - cy) * .1;
+  calm += (calmTo - calm) * .08;
+  if (!holding) { const k = (1 - calm * .72) * .1, damp = 1 - calm * .7; cx += (tx * damp - cx) * k; cy += (ty * damp - cy) * k; }
   card.style.transform = `rotateX(${cx.toFixed(2)}deg) rotateY(${cy.toFixed(2)}deg)`;
   card.style.setProperty("--ox", Math.sin(cy*RAD).toFixed(4));
   card.style.setProperty("--oy", (-Math.sin(cx*RAD)).toFixed(4));
