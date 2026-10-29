@@ -82,9 +82,9 @@ body{
 
 /* roblox: caixinha à direita, igual às do cartão; troll face no canto inferior direito, revelado pela lanterna */
 .side-soc,.side-soc.tip{position:fixed;z-index:12;right:6vw;top:calc(50% - 27px);width:54px;height:54px;border-radius:16px;display:grid;place-items:center;color:var(--mute);text-decoration:none;
-  background:rgba(0,0,0,.35);border:1px solid var(--line);opacity:.4;
+  background:rgba(0,0,0,.35);border:1px solid var(--line);opacity:0;
   transition:opacity .3s,color .25s,border-color .25s,box-shadow .25s,background .25s}
-.side-soc .ico{width:26px;height:26px}
+.side-soc .ico{width:26px;height:26px;-webkit-mask-size:contain;mask-size:contain;-webkit-mask-position:center;mask-position:center;-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat}
 .side-soc .rbx{--ico:url("data:image/png;base64,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")}
 .side-soc:hover,.side-soc:focus-visible{opacity:1;color:#fff;background:#000;border-color:rgba(255,255,255,.55);outline:none;
   box-shadow:0 0 0 1px rgba(255,255,255,.12),0 0 14px rgba(255,255,255,.22),0 0 32px -6px rgba(255,255,255,.28)}
@@ -225,6 +225,7 @@ body.entered .lay{animation:rise .8s cubic-bezier(.2,.8,.2,1) backwards;animatio
 .pdot{width:8px;height:8px;border-radius:50%;flex:none;background:#6b6b70;color:#6b6b70;box-shadow:0 0 8px currentColor}
 .ptext{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .ptext b{color:var(--fg);font-weight:500}
+.pimg{width:16px;height:16px;border-radius:4px;object-fit:cover;vertical-align:-3px;margin-right:6px;pointer-events:none}
 .st-online .pdot,.dot.st-online{background:#3ba55c;color:#3ba55c}
 .st-idle .pdot,.dot.st-idle{background:#faa61a;color:#faa61a}
 .st-dnd .pdot,.dot.st-dnd{background:#ed4245;color:#ed4245}
@@ -547,34 +548,47 @@ const cur = $("cur");
 /* ---------- presença do Discord (via Lanyard) ---------- */
 const presence = $("presence"), ptext = $("ptext"), avdot = $("avdot");
 const ST = { online: "online", idle: "ausente", dnd: "não perturbe", offline: "offline" };
+function actImg(a){
+  try {
+    const img = a.assets && (a.assets.large_image || a.assets.small_image); if (!img) return "";
+    if (img.startsWith("mp:")) return "https://media.discordapp.net/" + img.slice(3);
+    if (img.startsWith("spotify:")) return "https://i.scdn.co/image/" + img.slice(8);
+    return a.application_id ? "https://cdn.discordapp.com/app-assets/" + a.application_id + "/" + img + ".png" : "";
+  } catch(e) { return ""; }
+}
 function showPresence(d){
-  if (!d) return;
-  const st = d.discord_status || "offline";
+  if (!d || !d.discord_status) return;
+  const st = d.discord_status;
   [presence, avdot].forEach(el => { el.classList.remove("st-online","st-idle","st-dnd","st-offline"); el.classList.add("st-" + st); });
   const acts = d.activities || [];
-  const custom = acts.find(a => a.type === 4 && a.state), game = acts.find(a => a.type === 0);
-  let extra = "";
-  if (d.listening_to_spotify && d.spotify) extra = "ouvindo <b>" + esc(d.spotify.song) + "</b> · " + esc(d.spotify.artist);
-  else if (game) extra = "jogando <b>" + esc(game.name) + "</b>" + (game.details ? " · " + esc(game.details) : "");
-  else if (custom) extra = "<b>" + esc(custom.state) + "</b>";
-  ptext.innerHTML = (ST[st] || esc(st)) + (extra ? " · " + extra : "");
+  const custom = acts.find(a => a.type === 4), game = acts.find(a => a.type === 0), stream = acts.find(a => a.type === 1), listen = acts.find(a => a.type === 2 && a.name !== "Spotify"), watch = acts.find(a => a.type === 3), comp = acts.find(a => a.type === 5);
+  let extra = "", img = "";
+  if (d.listening_to_spotify && d.spotify) { extra = "ouvindo <b>" + esc(d.spotify.song) + "</b> · " + esc(d.spotify.artist); img = d.spotify.album_art_url || ""; }
+  else if (game) { extra = "jogando <b>" + esc(game.name) + "</b>" + (game.details ? " · " + esc(game.details) : "") + (game.state ? " · " + esc(game.state) : ""); img = actImg(game); }
+  else if (stream) { extra = "transmitindo <b>" + esc(stream.name) + "</b>" + (stream.details ? " · " + esc(stream.details) : ""); img = actImg(stream); }
+  else if (listen) { extra = "ouvindo <b>" + esc(listen.name) + "</b>" + (listen.details ? " · " + esc(listen.details) : ""); img = actImg(listen); }
+  else if (watch) { extra = "assistindo <b>" + esc(watch.name) + "</b>" + (watch.details ? " · " + esc(watch.details) : ""); img = actImg(watch); }
+  else if (comp) { extra = "competindo em <b>" + esc(comp.name) + "</b>"; img = actImg(comp); }
+  else if (custom && (custom.state || (custom.emoji && custom.emoji.name))) extra = "<b>" + (custom.emoji && custom.emoji.name && !custom.emoji.id ? esc(custom.emoji.name) + " " : "") + esc(custom.state || "") + "</b>";
+  ptext.innerHTML = (img ? '<img class="pimg" src="' + esc(img) + '" alt="" onerror="this.remove()">' : "") + (ST[st] || esc(st)) + (extra ? " · " + extra : "");
   presence.hidden = false;
 }
 (function livePresence(){
   const id = CONFIG.discordId; if (!id) return;
-  function poll(){ fetch("https://api.lanyard.rest/v1/users/" + id).then(r => r.json()).then(j => { if (j && j.success) showPresence(j.data); }).catch(()=>{}); }
+  function poll(){ fetch("https://api.lanyard.rest/v1/users/" + id + "?t=" + Date.now(), { cache: "no-store" }).then(r => r.json()).then(j => { if (j && j.success) showPresence(j.data); }).catch(()=>{}); }
   let ws, hb;
   function connect(){
     try { ws = new WebSocket("wss://api.lanyard.rest/socket"); } catch(e) { return; }
     ws.onmessage = ev => {
       let m; try { m = JSON.parse(ev.data); } catch(e) { return; }
       if (m.op === 1) { ws.send(JSON.stringify({ op: 2, d: { subscribe_to_id: id } })); clearInterval(hb); hb = setInterval(() => { try { ws.send(JSON.stringify({ op: 3 })); } catch(e){} }, (m.d && m.d.heartbeat_interval) || 30000); }
-      if (m.op === 0 && m.d && m.d.discord_status) showPresence(m.d);
+      if (m.op === 0 && m.d) showPresence(m.d.discord_status ? m.d : (m.d[id] || null));
     };
-    ws.onclose = () => { clearInterval(hb); setTimeout(connect, 15000); };
+    ws.onclose = () => { clearInterval(hb); setTimeout(connect, 10000); };
     ws.onerror = () => { try { ws.close(); } catch(e){} };
   }
-  poll(); connect(); setInterval(poll, 60000);
+  poll(); connect(); setInterval(poll, 15000);
+  document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") poll(); });
 })();
 
 /* ---------- música ---------- */
