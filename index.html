@@ -930,13 +930,13 @@ addEventListener("pointermove", e => {
 /* tiro: clique no vazio (fora de links e botões); segurar = rajada */
 const HOLE_SRC = Array.from({length: 10}, (_, i) => "assets/furo-" + i + ".png");
 const HOLES = HOLE_SRC.map(s => { const i = new Image(); i.src = s; return i; });
-/* sons: tiro único, rajada (loop) e final da rajada, do arquivo da AK-47 do CS:GO */
+/* sons do arquivo da AK-47 do CS:GO: clique = último tiro da rajada (com eco); segurar = rajada em loop; soltar = o mesmo tiro final */
 const SFX = { single: null, burst: null, tail: null };
 let sfx = null, auto = null, burst = 0, gx = innerWidth/2, gy = innerHeight/2, loopSrc = null, loopGain = null;
 function sfxCtx(){ if (!sfx) { try { const AC = window.AudioContext || window.webkitAudioContext; sfx = actx || (AC ? new AC() : null); } catch(e) { sfx = null; } } return sfx; }
 function loadShot(){
   const c = sfxCtx(); if (!c || SFX.single) return;
-  [["single", "assets/tiro-unico.wav"], ["burst", "assets/tiro-rajada.wav"], ["tail", "assets/tiro-fim.wav"]].forEach(([k, u]) => {
+  [["single", "assets/tiro-fim.wav"], ["burst", "assets/tiro-rajada.wav"], ["tail", "assets/tiro-fim.wav"]].forEach(([k, u]) => {
     fetch(u).then(r => r.arrayBuffer()).then(b => c.decodeAudioData(b)).then(d => { SFX[k] = d; }).catch(()=>{});
   });
 }
