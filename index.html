@@ -923,7 +923,7 @@ function bang(){
   if (audio.muted || volVal === 0) return;
   const c = sfxCtx(); if (!c) return;
   if (c.state === "suspended") c.resume();
-  const v = Math.min(1, Math.pow(volVal/100, .8) * 1.9), t = c.currentTime;
+  const v = Math.min(1, Math.pow(volVal/100, .9) * 1.1), t = c.currentTime;
   try {
     const g = c.createGain(); g.gain.value = v; g.connect(c.destination);
     if (shotBuf) { const s = c.createBufferSource(); s.buffer = shotBuf; s.playbackRate.value = .94 + Math.random()*.12; s.connect(g); s.start(t); return; }
