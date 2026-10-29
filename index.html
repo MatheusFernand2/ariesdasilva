@@ -154,7 +154,7 @@ body.entered .rise{animation:rise .8s cubic-bezier(.2,.8,.2,1) both;animation-de
 .pbtn:active{transform:scale(.94)}
 .pbtn svg{width:18px;height:18px;fill:currentColor}
 
-.foot{width:100%;display:flex;justify-content:space-between;gap:12px;font-family:var(--f-mono);font-size:11px;color:var(--mute);padding-top:8px;margin-top:4px;border-top:1px solid var(--line)}
+.foot{width:100%;display:flex;justify-content:center;gap:12px;font-family:var(--f-mono);font-size:11px;color:var(--mute);padding-top:8px;margin-top:4px;border-top:1px solid var(--line)}
 .foot button{all:unset;cursor:pointer;color:var(--mute)}
 .foot button:hover,.foot button:focus-visible{color:var(--fg)}
 
@@ -186,9 +186,6 @@ body.entered .rise{animation:rise .8s cubic-bezier(.2,.8,.2,1) both;animation-de
     <div class="avatar rise" style="--d:0"><div class="ring"></div><div class="face" id="avatar"></div><div class="dot" title="online"></div></div>
     <h1 class="name rise" style="--d:1" id="name"></h1>
     <div class="handle rise" style="--d:1" id="handle"></div>
-    <div class="badges rise" style="--d:2" id="badges"></div>
-    <p class="bio rise" style="--d:3"><span class="prompt">➜ </span><span id="typed"></span><span class="caret"></span></p>
-    <div class="meta rise" style="--d:3"><span class="pulse"></span><span id="status"></span><span>·</span><time id="clock"></time></div>
     <nav class="socials rise" style="--d:4" id="socials" aria-label="Redes sociais"></nav>
     <section class="player rise" style="--d:5" id="player" aria-label="Música" hidden>
       <div class="disc"><img id="discImg" alt=""></div>
@@ -201,7 +198,7 @@ body.entered .rise{animation:rise .8s cubic-bezier(.2,.8,.2,1) both;animation-de
       </div>
       <button class="pbtn" id="pBtn" type="button" aria-label="Tocar"></button>
     </section>
-    <footer class="foot rise" style="--d:6"><span id="year"></span><button id="share" type="button">copiar link ↗</button></footer>
+    <footer class="foot rise" style="--d:6"><button id="share" type="button">copiar link ↗</button></footer>
   </article>
 </main>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
@@ -247,18 +244,10 @@ const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
 /* ---------- conteúdo ---------- */
 $("name").textContent = CONFIG.name;
 $("handle").textContent = CONFIG.handle;
-$("status").textContent = CONFIG.status;
-$("year").textContent = "© " + new Date().getFullYear() + " " + CONFIG.name.toLowerCase();
 if (CONFIG.avatarUrl) {
   const im = new Image(); im.alt = CONFIG.name; im.src = CONFIG.avatarUrl; $("avatar").append(im);
   $("discImg").src = CONFIG.avatarUrl;
 }
-CONFIG.badges.forEach(b => {
-  const el = document.createElement("span");
-  el.className = "badge tip"; el.tabIndex = 0; el.dataset.tip = b.tip;
-  const i = document.createElement("i"); i.textContent = b.icon; el.append(i, b.text);
-  $("badges").append(el);
-});
 CONFIG.links.forEach(l => {
   const a = document.createElement("a");
   a.className = "soc tip"; a.href = l.url; a.target = "_blank"; a.rel = "noopener";
@@ -268,26 +257,6 @@ CONFIG.links.forEach(l => {
   a.append(ic); $("socials").append(a);
 });
 
-function tick(){ try{ $("clock").textContent = new Intl.DateTimeFormat("pt-BR",{hour:"2-digit",minute:"2-digit",timeZone:CONFIG.timezone}).format(new Date()) + " aqui"; }catch(e){} }
-tick(); setInterval(tick, 20000);
-
-/* ---------- bio digitando ---------- */
-let typingStarted = false;
-function startTyping(){
-  if (typingStarted) return; typingStarted = true;
-  const out = $("typed"), lines = CONFIG.bio;
-  if (reduce) { out.textContent = lines[0]; return; }
-  let li = 0, ch = 0, del = false;
-  function step(){
-    const line = lines[li];
-    if (!del) { ch++; out.textContent = line.slice(0, ch); if (ch >= line.length) { del = true; return setTimeout(step, 2200); } return setTimeout(step, 45 + Math.random()*50); }
-    ch--; out.textContent = line.slice(0, ch);
-    if (ch <= 0) { del = false; li = (li + 1) % lines.length; return setTimeout(step, 300); }
-    setTimeout(step, 22);
-  }
-  step();
-}
-$("typed").textContent = CONFIG.bio[0];
 
 /* ---------- música ---------- */
 const audio = $("audio"), player = $("player"), pBtn = $("pBtn"), vol = $("vol");
@@ -342,7 +311,6 @@ function doEnter(){
   document.body.classList.add("entered");
   enter.classList.add("gone");
   setTimeout(() => { enter.hidden = true; }, 750);
-  startTyping();
   if (musicOk || (CONFIG.music && CONFIG.music.src && audio.readyState === 0)) {
     audio.play().then(() => { vol.hidden = false; }).catch(() => {});
   }
