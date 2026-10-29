@@ -844,7 +844,13 @@ function fallback(text, msg){
   let ok = false; try { ok = document.execCommand("copy"); } catch(e){} t.remove();
   say(ok ? msg : "copie: " + text);
 }
-$("share").addEventListener("click", () => copy(location.href.split("#")[0], "link copiado"));
+/* copiar link: 3 cliques rápidos abrem o painel (atalho pro celular) */
+let shareClicks = [];
+$("share").addEventListener("click", () => {
+  const now = Date.now(); shareClicks = shareClicks.filter(t => now - t < 1200); shareClicks.push(now);
+  if (shareClicks.length >= 3) { shareClicks = []; if (window.__openPanel) { window.__openPanel(); return; } }
+  copy(location.href.split("#")[0], "link copiado");
+});
 
 /* ---------- inclinação 3D + paralaxe das camadas ---------- */
 const card = $("card");
@@ -911,6 +917,7 @@ const TRACK = (function(){
   function list(rows, f){ return rows.length ? rows.map(f).join("") : '<li class="pempty">nada ainda</li>'; }
   function open(){ P.hidden = false; err.hidden = true; if (key) load(); else { login.hidden = false; body.hidden = true; setTimeout(() => keyInput.focus(), 60); } }
   function close(){ P.hidden = true; clearInterval(timer); }
+  window.__openPanel = open;
   document.addEventListener("keydown", e => {
     if (e.ctrlKey && e.altKey && !e.shiftKey && e.code === "KeyD") { e.preventDefault(); P.hidden ? open() : close(); }
     else if (e.key === "Escape" && !P.hidden) close();
