@@ -1,8 +1,13 @@
-// Configuração da Cloudflare: publica este repositório como site estático no Worker "ariesdasilva".
+// Configuração da Cloudflare: site estático + registro de visitas (Durable Object com SQLite).
 {
   "name": "ariesdasilva",
+  "main": "worker.js",
   "compatibility_date": "2026-09-01",
-  "assets": {
-    "directory": "."
+  "assets": { "directory": ".", "binding": "ASSETS" },
+  "durable_objects": { "bindings": [{ "name": "STATS", "class_name": "Stats" }] },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["Stats"] }],
+  "vars": {
+    // SHA-256 da senha do painel secreto (Ctrl+Alt+D). A senha em si não fica no repositório.
+    "PANEL_HASH": "6838bf73e68c60920e9cf41e19113c68cf8f641dd320a830444a684a4e7be196"
   }
 }
