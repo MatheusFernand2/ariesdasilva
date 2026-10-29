@@ -790,7 +790,6 @@ addEventListener("keydown", previewTry);
 
 /* ---------- clique para entrar ---------- */
 const enter = $("enter");
-let gyro = false;
 function doEnter(){
   if (document.body.classList.contains("entered")) return;
   document.body.classList.add("entered", "nogyro");
@@ -807,12 +806,6 @@ function doEnter(){
     loadShot();
   }
   previewStop();
-  const D = window.DeviceOrientationEvent;
-  if (D && !fine) {
-    const listen = () => addEventListener("deviceorientation", onTiltDevice);
-    if (typeof D.requestPermission === "function") D.requestPermission().then(s => { if (s === "granted") listen(); }).catch(()=>{});
-    else listen();
-  }
 }
 enter.addEventListener("click", doEnter);
 try { enter.focus({ preventScroll: true }); } catch(e){}
@@ -847,13 +840,6 @@ if (!reduce && fine) {
     ty = Math.max(-1, Math.min(1, nx)) * MAX; tx = -Math.max(-1, Math.min(1, ny)) * MAX; tilting = true;
   });
   document.addEventListener("mouseleave", () => { tx = 0; ty = 0; });
-}
-function onTiltDevice(e){
-  if (e.beta == null || e.gamma == null) return;
-  if (!gyro) { gyro = true; document.body.classList.remove("nogyro"); }
-  tx = Math.max(-MAX, Math.min(MAX, -(e.beta - 40) * .5));
-  ty = Math.max(-MAX, Math.min(MAX, e.gamma * .5));
-  tilting = true;
 }
 function applyTilt(){
   if (!tilting || reduce) return;
