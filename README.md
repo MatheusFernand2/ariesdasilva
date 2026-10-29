@@ -10,3 +10,7 @@ Minha página pessoal de links, no estilo guns.lol.
 ## Publicação
 Ligado à Cloudflare (Worker `ariesdasilva`). Todo push na branch `main` publica sozinho.
 Comando de deploy na Cloudflare: `npx wrangler deploy`.
+
+## Painel secreto
+`Ctrl+Alt+D` no site abre o painel de visitas (pede senha). O registro fica em `worker.js` (Durable Object com SQLite na Cloudflare).
+A senha não está no repositório: em `wrangler.jsonc` fica só o SHA-256 dela (`PANEL_HASH`).
