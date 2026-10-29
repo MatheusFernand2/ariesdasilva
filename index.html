@@ -64,6 +64,22 @@ body{
 .namewrap:hover{transform:translateY(-5px) scale(1.09);filter:drop-shadow(0 0 22px rgba(255,255,255,.45)) drop-shadow(0 0 60px rgba(255,255,255,.18))}
 .namewrap:hover .name{color:#fff}
 
+/* letras do nome: cada uma gira em 3D ao passar o mouse */
+.namewrap{perspective:520px}
+.name{transform-style:preserve-3d}
+.ch{display:inline-block;transform-style:preserve-3d;will-change:transform;transition:color .3s,text-shadow .3s;cursor:default}
+.ch.spinning{color:#fff;text-shadow:0 0 28px rgba(255,255,255,.85),0 0 70px rgba(255,255,255,.3)}
+.ch.spin-y{animation:spinY .8s cubic-bezier(.3,.7,.25,1)}
+.ch.spin-x{animation:spinX .8s cubic-bezier(.3,.7,.25,1)}
+.ch.spin-yr{animation:spinYr .8s cubic-bezier(.3,.7,.25,1)}
+.ch.spin-flip{animation:spinFlip .9s cubic-bezier(.3,.7,.25,1)}
+.ch.spin-tumble{animation:spinTumble .9s cubic-bezier(.3,.7,.25,1)}
+@keyframes spinY{to{transform:rotateY(360deg)}}
+@keyframes spinX{to{transform:rotateX(360deg)}}
+@keyframes spinYr{to{transform:rotateY(-360deg)}}
+@keyframes spinFlip{0%{transform:rotateY(0) translateZ(0)}50%{transform:rotateY(180deg) rotateX(28deg) translateZ(40px)}100%{transform:rotateY(360deg) rotateX(0) translateZ(0)}}
+@keyframes spinTumble{0%{transform:rotate(0) rotateX(0)}50%{transform:rotate(-14deg) rotateX(180deg) translateZ(30px)}100%{transform:rotate(0) rotateX(360deg) translateZ(0)}}
+
 /* glitch (nome) */
 .glitch{position:relative;display:inline-block;animation:gBase var(--gt,7s) steps(1,end) infinite}
 .glitch::before,.glitch::after{content:attr(data-text);position:absolute;inset:0;opacity:0;pointer-events:none;clip-path:inset(0 0 100% 0);text-shadow:none}
@@ -410,7 +426,7 @@ const root = document.documentElement;
 function esc(s){ return String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
 
 /* ---------- conteúdo ---------- */
-$("name").textContent = CONFIG.name; $("name").dataset.text = CONFIG.name;
+$("name").dataset.text = CONFIG.name;
 $("enterName").textContent = CONFIG.name; $("enterName").dataset.text = CONFIG.name;
 $("handle").textContent = CONFIG.handle;
 if (CONFIG.eyebrow) $("eyebrow").textContent = CONFIG.eyebrow; else $("eyebrow").hidden = true;
@@ -423,6 +439,19 @@ CONFIG.links.forEach(l => {
   if (ICONS[l.icon]) ic.style.setProperty("--ico", `url("${ICONS[l.icon]}")`);
   a.append(ic); $("socials").append(a);
 });
+
+/* ---------- letras do nome girando em 3D ---------- */
+(function letters(){
+  const h = $("name"); h.textContent = "";
+  const kinds = ["spin-y", "spin-x", "spin-yr", "spin-flip", "spin-tumble", "spin-y", "spin-x"];
+  [...CONFIG.name].forEach((chr, i) => {
+    const s = document.createElement("span"); s.className = "ch"; s.textContent = chr; const k = kinds[i % kinds.length];
+    const go = () => { if (reduce || s.classList.contains("spinning")) return; s.classList.add(k, "spinning"); };
+    s.addEventListener("pointerenter", go); s.addEventListener("pointerdown", go);
+    s.addEventListener("animationend", e => { if (e.target === s) s.classList.remove(k, "spinning"); });
+    h.append(s);
+  });
+})();
 
 /* ---------- cursor: mira ---------- */
 const cur = $("cur");
