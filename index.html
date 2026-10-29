@@ -61,30 +61,24 @@ body{
 
 /* nome: salta pra frente no hover */
 .namewrap{display:inline-block;transition:transform .35s cubic-bezier(.2,.8,.2,1),filter .35s}
-.namewrap:hover{transform:translateY(-5px) scale(1.09);filter:drop-shadow(0 0 22px rgba(255,255,255,.45)) drop-shadow(0 0 60px rgba(255,255,255,.18))}
+.namewrap:hover{transform:translateY(-5px) scale(1.07)}
 .namewrap:hover .name{color:#fff}
 
-/* letras do nome: cada uma gira em 3D ao passar o mouse */
+/* letras do nome: fita 3D que acompanha o mouse; a letra tocada gira na direção do movimento */
 .namewrap{perspective:520px}
 .name{transform-style:preserve-3d}
-.ch{display:inline-block;transform-style:preserve-3d;will-change:transform;transition:color .3s,text-shadow .3s;cursor:default}
-.ch.spinning{color:#fff;text-shadow:0 0 28px rgba(255,255,255,.85),0 0 70px rgba(255,255,255,.3)}
-.ch.spin-y{animation:spinY .8s cubic-bezier(.3,.7,.25,1)}
-.ch.spin-x{animation:spinX .8s cubic-bezier(.3,.7,.25,1)}
-.ch.spin-yr{animation:spinYr .8s cubic-bezier(.3,.7,.25,1)}
-.ch.spin-flip{animation:spinFlip .9s cubic-bezier(.3,.7,.25,1)}
-.ch.spin-tumble{animation:spinTumble .9s cubic-bezier(.3,.7,.25,1)}
-@keyframes spinY{to{transform:rotateY(360deg)}}
-@keyframes spinX{to{transform:rotateX(360deg)}}
-@keyframes spinYr{to{transform:rotateY(-360deg)}}
-@keyframes spinFlip{0%{transform:rotateY(0) translateZ(0)}50%{transform:rotateY(180deg) rotateX(28deg) translateZ(40px)}100%{transform:rotateY(360deg) rotateX(0) translateZ(0)}}
-@keyframes spinTumble{0%{transform:rotate(0) rotateX(0)}50%{transform:rotate(-14deg) rotateX(180deg) translateZ(30px)}100%{transform:rotate(0) rotateX(360deg) translateZ(0)}}
-
-/* sem seleção/arrasto no cartão e nos tiros (o painel continua selecionável) */
-body{-webkit-user-select:none;user-select:none}
-.panel,.panel *{-webkit-user-select:text;user-select:text}
-input{-webkit-user-select:text;user-select:text}
-img{-webkit-user-drag:none;user-drag:none;pointer-events:none}
+.ch{display:inline-block;transform-style:preserve-3d;will-change:transform;cursor:default;--ty:0deg;--tz:0px;
+  transform:rotateY(var(--ty)) translateZ(var(--tz));transition:transform .28s cubic-bezier(.2,.8,.2,1)}
+.ch-in{display:inline-block;transform-style:preserve-3d;transition:color .3s,text-shadow .3s}
+.ch.spinning .ch-in{color:#fff;text-shadow:0 0 26px rgba(255,255,255,.8),0 0 60px rgba(255,255,255,.3)}
+.ch.spin-y .ch-in{animation:spinY .78s cubic-bezier(.3,.7,.25,1)}
+.ch.spin-yr .ch-in{animation:spinYr .78s cubic-bezier(.3,.7,.25,1)}
+.ch.spin-x .ch-in{animation:spinX .78s cubic-bezier(.3,.7,.25,1)}
+.ch.spin-flip .ch-in{animation:spinFlip .9s cubic-bezier(.3,.7,.25,1)}
+@keyframes spinY{50%{transform:rotateY(180deg) translateZ(55px)}100%{transform:rotateY(360deg) translateZ(0)}}
+@keyframes spinYr{50%{transform:rotateY(-180deg) translateZ(55px)}100%{transform:rotateY(-360deg) translateZ(0)}}
+@keyframes spinX{50%{transform:rotateX(180deg) translateZ(45px)}100%{transform:rotateX(360deg) translateZ(0)}}
+@keyframes spinFlip{50%{transform:rotateY(180deg) rotateX(30deg) translateZ(60px)}100%{transform:rotateY(360deg) rotateX(0) translateZ(0)}}
 
 /* glitch (nome) */
 .glitch{position:relative;display:inline-block;animation:gBase var(--gt,7s) steps(1,end) infinite}
@@ -109,8 +103,9 @@ img{-webkit-user-drag:none;user-drag:none;pointer-events:none}
   background:rgba(0,0,0,.6);backdrop-filter:blur(18px) saturate(.6);-webkit-backdrop-filter:blur(18px) saturate(.6);
   display:grid;place-items:center;align-content:center;gap:10px;font-family:var(--f-mono);
   transition:opacity .7s ease,backdrop-filter .7s ease,-webkit-backdrop-filter .7s ease}
-.enter-name{font-family:var(--f-display);font-size:clamp(76px,19vw,160px);line-height:1;letter-spacing:.01em;color:#f4f4f6;--gt:2.6s;
-  text-shadow:0 0 26px rgba(255,255,255,.3),0 0 80px rgba(255,255,255,.1);margin-bottom:10px;-webkit-font-smoothing:antialiased;text-rendering:geometricPrecision}
+.ename-wrap{position:relative;display:inline-block;font-family:var(--f-display);font-size:clamp(60px,14vw,118px);line-height:1;letter-spacing:-.015em;margin-bottom:10px}
+.ename-glow{position:absolute;inset:0;color:#fff;opacity:.3;filter:blur(22px);transform:scale(1.04);pointer-events:none;z-index:0;white-space:nowrap}
+.enter-name{position:relative;z-index:1;color:#f7f7f9;--gt:2.6s;text-shadow:none;-webkit-font-smoothing:antialiased;text-rendering:geometricPrecision}
 .enter-txt{font-size:clamp(13px,2vw,16px);letter-spacing:.34em;text-transform:lowercase;text-shadow:0 0 18px var(--glow),0 0 2px #fff;animation:flick 3.2s ease-in-out infinite}
 .enter-txt::after{content:"_";margin-left:2px;animation:blink 1s steps(1) infinite}
 .enter-sub{font-size:11px;letter-spacing:.2em;color:var(--mute);text-transform:uppercase}
@@ -201,8 +196,10 @@ body.entered .lay{animation:rise .8s cubic-bezier(.2,.8,.2,1) backwards;animatio
 @keyframes spin{to{--a:360deg}}
 
 .eyebrow{font-size:11px;letter-spacing:.42em;color:var(--mute);margin-bottom:4px;padding-left:.42em}
-.name{margin:0;font-family:var(--f-display);font-weight:400;font-size:clamp(62px,15vw,84px);line-height:1;letter-spacing:.01em;color:#f4f4f6;
-  text-shadow:0 0 22px rgba(255,255,255,.3),0 0 70px rgba(255,255,255,.1);-webkit-font-smoothing:antialiased;text-rendering:geometricPrecision}
+.namewrap{position:relative;font-family:var(--f-display);font-size:clamp(62px,15vw,84px);line-height:1;letter-spacing:.01em}
+.name-glow{position:absolute;inset:0;color:#fff;opacity:.3;filter:blur(16px);transform:scale(1.04);pointer-events:none;z-index:0;white-space:nowrap;transition:opacity .35s}
+.namewrap:hover .name-glow{opacity:.6}
+.name{position:relative;z-index:1;margin:0;font-weight:400;color:#f4f4f6;text-shadow:none;-webkit-font-smoothing:antialiased;text-rendering:geometricPrecision}
 .handle{margin-top:-2px;font-size:12.5px;letter-spacing:.04em;color:var(--mute);overflow-wrap:anywhere}
 
 .presence{display:flex;align-items:center;gap:8px;max-width:100%;min-width:0;padding:6px 12px;border-radius:999px;border:1px solid var(--line);background:rgba(0,0,0,.3);font-size:11.5px;color:var(--mute)}
@@ -342,7 +339,7 @@ body.entered .lay{animation:rise .8s cubic-bezier(.2,.8,.2,1) backwards;animatio
 <div class="art-left" id="artLeft" aria-hidden="true"></div>
 
 <button class="enter" id="enter" type="button" aria-label="Entrar no site">
-  <span class="enter-name glitch" id="enterName" data-text=""></span>
+  <span class="ename-wrap"><span class="ename-glow" id="enterGlow" aria-hidden="true"></span><span class="enter-name glitch" id="enterName" data-text=""></span></span>
   <span class="enter-txt">clique para entrar</span>
   <span class="enter-sub" id="enterSub"></span>
 </button>
@@ -364,7 +361,7 @@ body.entered .lay{animation:rise .8s cubic-bezier(.2,.8,.2,1) backwards;animatio
     <div class="sheen" aria-hidden="true"></div>
     <div class="rim" aria-hidden="true"></div>
     <div class="lay" style="--z:70;--d:0"><div class="avatar"><div class="ring"></div><div class="face" id="avatar"></div><div class="dot" id="avdot" title="status do Discord"></div></div></div>
-    <div class="lay" style="--z:52;--d:1"><div class="eyebrow" id="eyebrow"></div><span class="namewrap"><h1 class="name glitch" id="name" data-text=""></h1></span><div class="handle" id="handle"></div></div>
+    <div class="lay" style="--z:52;--d:1"><div class="eyebrow" id="eyebrow"></div><span class="namewrap"><span class="name-glow" id="nameGlow" aria-hidden="true"></span><h1 class="name glitch" id="name" data-text=""></h1></span><div class="handle" id="handle"></div></div>
     <div class="lay" style="--z:40;--d:2"><div class="presence" id="presence" hidden><span class="pdot" id="pdot"></span><span class="ptext" id="ptext"></span></div></div>
     <div class="lay" style="--z:44;--d:3"><nav class="socials" id="socials" aria-label="Redes sociais"></nav></div>
     <div class="lay" style="--z:30;--d:4">
@@ -441,8 +438,8 @@ const root = document.documentElement;
 function esc(s){ return String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
 
 /* ---------- conteúdo ---------- */
-$("name").dataset.text = CONFIG.name;
-$("enterName").textContent = CONFIG.name; $("enterName").dataset.text = CONFIG.name;
+$("name").dataset.text = CONFIG.name; $("nameGlow").textContent = CONFIG.name;
+$("enterName").textContent = CONFIG.name; $("enterName").dataset.text = CONFIG.name; $("enterGlow").textContent = CONFIG.name;
 $("handle").textContent = CONFIG.handle;
 if (CONFIG.eyebrow) $("eyebrow").textContent = CONFIG.eyebrow; else $("eyebrow").hidden = true;
 if (CONFIG.avatarUrl) { const im = new Image(); im.alt = CONFIG.name; im.src = CONFIG.avatarUrl; $("avatar").append(im); }
@@ -455,17 +452,32 @@ CONFIG.links.forEach(l => {
   a.append(ic); $("socials").append(a);
 });
 
-/* ---------- letras do nome girando em 3D ---------- */
+/* ---------- letras do nome: fita 3D + giro ---------- */
 (function letters(){
-  const h = $("name"); h.textContent = "";
-  const kinds = ["spin-y", "spin-x", "spin-yr", "spin-flip", "spin-tumble", "spin-y", "spin-x"];
+  const h = $("name"), wrap = h.closest(".namewrap"); h.textContent = "";
+  const els = [];
   [...CONFIG.name].forEach((chr, i) => {
-    const s = document.createElement("span"); s.className = "ch"; s.textContent = chr; const k = kinds[i % kinds.length];
-    const go = () => { if (reduce || s.classList.contains("spinning")) return; s.classList.add(k, "spinning"); };
-    s.addEventListener("pointerenter", go); s.addEventListener("pointerdown", go);
-    s.addEventListener("animationend", e => { if (e.target === s) s.classList.remove(k, "spinning"); });
-    h.append(s);
+    const s = document.createElement("span"); s.className = "ch"; const inner = document.createElement("span"); inner.className = "ch-in"; inner.textContent = chr; s.append(inner); h.append(s); els.push(s);
+    s.addEventListener("animationend", e => { if (e.target === inner) s.classList.remove("spin-y", "spin-yr", "spin-x", "spin-flip", "spinning"); });
   });
+  let lastX = null, dir = 1;
+  function spin(s, i){
+    if (reduce || s.classList.contains("spinning")) return;
+    const kind = (i % 4 === 1) ? "spin-x" : (i % 4 === 3) ? "spin-flip" : (dir > 0 ? "spin-y" : "spin-yr");
+    s.classList.add(kind, "spinning");
+  }
+  els.forEach((s, i) => { s.addEventListener("pointerenter", () => spin(s, i)); s.addEventListener("pointerdown", () => spin(s, i)); });
+  if (!fine) return;
+  wrap.addEventListener("pointermove", e => {
+    if (lastX !== null && Math.abs(e.clientX - lastX) > 1) dir = e.clientX > lastX ? 1 : -1;
+    lastX = e.clientX;
+    els.forEach(s => {
+      const r = s.getBoundingClientRect(), dx = e.clientX - (r.left + r.width/2), k = Math.max(-1, Math.min(1, dx / 70));
+      s.style.setProperty("--ty", (-k * 32).toFixed(1) + "deg");
+      s.style.setProperty("--tz", ((1 - Math.min(1, Math.abs(dx) / 90)) * 26).toFixed(1) + "px");
+    });
+  });
+  wrap.addEventListener("pointerleave", () => { lastX = null; els.forEach(s => { s.style.setProperty("--ty", "0deg"); s.style.setProperty("--tz", "0px"); }); });
 })();
 
 /* ---------- cursor: mira ---------- */
@@ -666,7 +678,7 @@ function drawViz(t){
 /* ---------- prévia abafada na tela de entrada (toca quando o navegador permite) ---------- */
 const previa = $("previa");
 let previewDead = false, previewPromise = null;
-function previewVol(){ return Math.min(.6, Math.pow(volVal/100, 2) * 1.6); }
+function previewVol(){ return Math.max(.12, Math.min(.85, Math.pow(volVal/100, 2) * 3.2)); }
 function previewTry(){
   if (previewDead || document.body.classList.contains("entered") || !M.src) return;
   previa.volume = previewVol();
@@ -698,10 +710,10 @@ function doEnter(){
   if (M.src) {
     ensureStart();
     audioGraph();
-    if (lpf && master) { lpf.frequency.value = 360; master.gain.value = .3; }   /* começa abafado e abre */
+    if (lpf && master) { lpf.frequency.value = 300; master.gain.value = .25; }   /* começa abafado e abre */
     play().then(() => {
       volbox.hidden = false; ensureStart();
-      if (actx && lpf && master) { const t = actx.currentTime; lpf.frequency.cancelScheduledValues(t); lpf.frequency.setValueAtTime(360, t); lpf.frequency.exponentialRampToValueAtTime(19000, t + 1.6); master.gain.cancelScheduledValues(t); master.gain.setValueAtTime(.3, t); master.gain.linearRampToValueAtTime(1, t + 1.3); }
+      if (actx && lpf && master) { const t = actx.currentTime; lpf.frequency.cancelScheduledValues(t); lpf.frequency.setValueAtTime(300, t); lpf.frequency.exponentialRampToValueAtTime(19000, t + 2.6); master.gain.cancelScheduledValues(t); master.gain.setValueAtTime(.25, t); master.gain.linearRampToValueAtTime(1, t + 2.2); }
     }).catch(() => {});
     loadShot();
   }
@@ -873,7 +885,7 @@ function bang(){
   if (audio.muted || volVal === 0) return;
   const c = sfxCtx(); if (!c) return;
   if (c.state === "suspended") c.resume();
-  const v = Math.pow(volVal/100, 2) * 1.1, t = c.currentTime;
+  const v = Math.min(1, Math.pow(volVal/100, 1.2) * 1.45), t = c.currentTime;
   try {
     const g = c.createGain(); g.gain.value = v; g.connect(c.destination);
     if (shotBuf) { const s = c.createBufferSource(); s.buffer = shotBuf; s.playbackRate.value = .94 + Math.random()*.12; s.connect(g); s.start(t); return; }
