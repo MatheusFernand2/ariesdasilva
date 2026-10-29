@@ -6,3 +6,4 @@ worker.js
 .git
 .wrangler
 node_modules
+.github

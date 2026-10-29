@@ -1,0 +1,17 @@
+# Teste manual do site publicado (Actions > "checar site" > Run workflow).
+# Só lê as rotas públicas; não grava visita (usa user-agent de robô) e não usa a senha do painel.
+name: checar site
+on:
+  workflow_dispatch:
+jobs:
+  checar:
+    runs-on: ubuntu-latest
+    steps:
+      - name: página
+        run: curl -sS -o /dev/null -m 20 -w "HTTP %{http_code} %{content_type} %{size_download} bytes\n" https://ariesdasilva.ariess.workers.dev/
+      - name: api/ping
+        run: curl -sS -i -m 20 https://ariesdasilva.ariess.workers.dev/api/ping | head -c 800; echo
+      - name: api/stats (senha errada de propósito, tem que dar 401 em JSON)
+        run: curl -sS -i -m 20 -H "x-panel-key: errada" "https://ariesdasilva.ariess.workers.dev/api/stats?limit=1" | head -c 800; echo
+      - name: api/hit (user-agent de robô, não grava nada)
+        run: curl -sS -i -m 20 -X POST -A "teste-bot" -H "Content-Type: application/json" -d '{"type":"visit","vid":"teste"}' https://ariesdasilva.ariess.workers.dev/api/hit | head -c 800; echo
